@@ -2,25 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 #nullable disable
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
-using System.Threading;
-using System.Threading.Tasks;
-using LeaveManagementSystem.Web.Service.LeaveAllocations;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using LeaveManagementSystem.Application.Service.LeaveAllocations;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 
 namespace LeaveManagementSystem.Web.Areas.Identity.Pages.Account
 {
@@ -127,7 +114,7 @@ namespace LeaveManagementSystem.Web.Areas.Identity.Pages.Account
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            var role= await _roleManager.Roles.Select(p=>p.Name).Where(a=> a != "Administrator").ToArrayAsync();
+            var role = await _roleManager.Roles.Select(p => p.Name).Where(a => a != "Administrator").ToArrayAsync();
             RoleNames = role;
         }
 
@@ -149,10 +136,10 @@ namespace LeaveManagementSystem.Web.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User created a new account with password.");
-                    
-                    if(Input.RoleName == "Supervisor")
+
+                    if (Input.RoleName == "Supervisor")
                     {
-                       await _userManager.AddToRolesAsync(user, [Roles.Employee, Roles.Supervisor]);
+                        await _userManager.AddToRolesAsync(user, [Roles.Employee, Roles.Supervisor]);
                     }
                     else
                     {

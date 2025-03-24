@@ -1,33 +1,30 @@
 using System.Reflection;
-using LeaveManagementSystem.Web.Data;
-using LeaveManagementSystem.Web.Service.Email;
-using LeaveManagementSystem.Web.Service.LeaveAllocations;
-using LeaveManagementSystem.Web.Service.LeaveRequests;
-using LeaveManagementSystem.Web.Service.LeaveTypes;
-using LeaveManagementSystem.Web.Service.Periods;
-using LeaveManagementSystem.Web.Service.Users;
-using Microsoft.AspNetCore.Identity;
+using LeaveManagementSystem.Application;
+using LeaveManagementSystem.Application.Service.Email;
+using LeaveManagementSystem.Application.Service.LeaveAllocations;
+using LeaveManagementSystem.Application.Service.LeaveRequests;
+using LeaveManagementSystem.Application.Service.LeaveTypes;
+using LeaveManagementSystem.Application.Service.Periods;
+using LeaveManagementSystem.Application.Service.Users;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<ILeaveTypeService, LeaveTypeService>();
-builder.Services.AddScoped<ILeaveAllocationsService, LeaveAllocationsService>();
-builder.Services.AddScoped<ILeaveRequestService, LeaveRequestService>();
-builder.Services.AddTransient<IEmailSender, EmailSender>();
-builder.Services.AddScoped<IPeriodService, PeriodService>();
-builder.Services.AddScoped<IUserServices, UserServices>();
-builder.Services.AddAutoMapper(Assembly.GetExecutingAssembly());
+
+DataServicesRegistration.AddDataServices(builder.Services, builder.Configuration);
+ApplicationServicesRegistration.AddApplicationServices(builder.Services);
+
+builder.Host.UseSerilog((ctx, config) =>
+    config.WriteTo.Console()
+    .ReadFrom.Configuration(ctx.Configuration)
+);
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdminSupervisorOnly", policy =>

@@ -1,20 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using LeaveManagementSystem.Application.Models.LeaveType;
+using LeaveManagementSystem.Application.Service.LeaveTypes;
 using Microsoft.EntityFrameworkCore;
-using LeaveManagementSystem.Web.Data;
-using AutoMapper;
-using System.Runtime.Intrinsics.Arm;
-using LeaveManagementSystem.Web.Service.LeaveTypes;
-using LeaveManagementSystem.Web.Models.LeaveType;
 
 namespace LeaveManagementSystem.Web.Controllers
 {
     [Authorize(Roles = Roles.Administrator)]
-    public class LeaveTypesController(ILeaveTypeService leaveTypeService) : Controller
+    public class LeaveTypesController(ILeaveTypeService leaveTypeService, ILogger<LeaveTypesController> _logger) : Controller
     {
         private readonly ILeaveTypeService _leaveTypeService = leaveTypeService;
         private const string NameExistsValidationMessage = "Leave type Name Already exists";
@@ -46,12 +37,12 @@ namespace LeaveManagementSystem.Web.Controllers
             return View();
         }
 
-      
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(LeaveTypeCreateVM leaveTypeCreate)
         {
-            if(await _leaveTypeService.CheckIfLeaveTypeNameExists(leaveTypeCreate.Name, 0))
+            if (await _leaveTypeService.CheckIfLeaveTypeNameExists(leaveTypeCreate.Name, 0))
             {
                 ModelState.AddModelError(nameof(leaveTypeCreate.Name), NameExistsValidationMessage);
             }
@@ -61,6 +52,7 @@ namespace LeaveManagementSystem.Web.Controllers
                 await _leaveTypeService.Create(leaveTypeCreate);
                 return RedirectToAction(nameof(Index));
             }
+            _logger.LogInformation("Errors {type}-{days}", leaveTypeCreate.Name, leaveTypeCreate.NumberOfDays);
             return View(leaveTypeCreate);
         }
 
@@ -78,7 +70,7 @@ namespace LeaveManagementSystem.Web.Controllers
             return View(leaveType);
         }
 
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, LeaveTypeEditVM leaveTypeEditVM)
@@ -130,7 +122,7 @@ namespace LeaveManagementSystem.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _leaveTypeService.Remove(id);            
+            await _leaveTypeService.Remove(id);
             return RedirectToAction(nameof(Index));
         }
 
